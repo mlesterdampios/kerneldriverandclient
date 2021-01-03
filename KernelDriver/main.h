@@ -84,15 +84,15 @@ struct VIRTUAL_QUERY_EX : CUSTOM_IOCTL_CALL
 	unsigned __int64 ProcessId;
 	PVOID BaseAddress;
 	MEMORY_BASIC_INFORMATION mbi;
-	SIZE_T size;
+	int size;
 };
 
 struct VIRTUAL_PROTECT : CUSTOM_IOCTL_CALL
 {
 	unsigned __int64 ProcessId;
-	PVOID Address;
-	DWORD protection;
-	SIZE_T size;
+	ULONG protect;
+	DWORD addr;
+	int size;
 };
 
 struct WRITE_PROCESS_MEMORY : CUSTOM_IOCTL_CALL
@@ -123,4 +123,4 @@ struct GET_PROCESS_PEB : CUSTOM_IOCTL_CALL
 	unsigned __int64 ProcessBaseAddres;
 };
 
-#define Printf(...) DbgPrintEx( DPFLTR_SYSTEM_ID, DPFLTR_ERROR_LEVEL, "[zDriver] " __VA_ARGS__ )
+#define Printf(...) DbgPrintEx( DPFLTR_SYSTEM_ID, DPFLTR_ERROR_LEVEL, "[zDriverZ] " __VA_ARGS__ )

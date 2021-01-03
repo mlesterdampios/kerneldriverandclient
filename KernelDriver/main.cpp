@@ -278,25 +278,38 @@ NTSTATUS CustomDispatch(PDEVICE_OBJECT device, PIRP irp)
 
 			// Acquire target process handle.
 			PEPROCESS target = nullptr;
-			const auto status = PsLookupProcessByProcessId((HANDLE)UserlandBuffer->ProcessId, &target);
+			auto status = PsLookupProcessByProcessId((HANDLE)UserlandBuffer->ProcessId, &target);
 
 			if (NT_SUCCESS(status)) {
-				// Attach to process.
-				KAPC_STATE state = {};
-
-				KeStackAttachProcess(target, &state);
-
+				KAPC_STATE apc;
 				ULONG old_protection;
-				ZwProtectVirtualMemory(ZwCurrentProcess(), &UserlandBuffer->Address, &UserlandBuffer->size, UserlandBuffer->protection, &old_protection);
-				KeUnstackDetachProcess(&state);
+				KeStackAttachProcess(target, &apc);
+				auto addr = (PVOID)UserlandBuffer->addr;
+				auto size = (size_t)UserlandBuffer->size;
+				status = ZwProtectVirtualMemory(ZwCurrentProcess(), &addr, &size, UserlandBuffer->protect, &old_protection);
+				if (NT_SUCCESS(status)) {
+					Printf("ZwProtectVirtualMemory success");
+				}
+				else {
+					Printf("ZwProtectVirtualMemory failed");
+				}
+				UserlandBuffer->size = (int)size;
+				UserlandBuffer->addr = (DWORD)addr;
+				KeUnstackDetachProcess(&apc);
+				UserlandBuffer->protect = old_protection;
 				ObfDereferenceObject(target);
 			}
+			else {
+				Printf("PsLookupProcessByProcessId failed");
+			}
 
-			Status = STATUS_SUCCESS;
+			//Status = STATUS_SUCCESS;
 			BytesIO = sizeof(VIRTUAL_PROTECT);
 			Printf("VIRTUAL_PROTECT_IOCTL");
 			Printf("ProcessId %d", UserlandBuffer->ProcessId);
-			Printf("Address %llu", UserlandBuffer->Address);
+			Printf("Address %ld", UserlandBuffer->addr);
+			Printf("size %d", UserlandBuffer->size);
+			Printf("old_protection %ld", UserlandBuffer->protect);
 			}
 
 			///////////////////////////////////////////
