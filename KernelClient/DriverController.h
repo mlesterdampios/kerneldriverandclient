@@ -37,6 +37,15 @@ struct VIRTUAL_QUERY_EX : CUSTOM_IOCTL_CALL
 	SIZE_T size;
 };
 
+struct VIRTUAL_PROTECT : CUSTOM_IOCTL_CALL
+{
+	unsigned __int64 ProcessId;
+	ULONG protect;
+	DWORD addr;
+	int size;
+};
+
+
 struct WRITE_PROCESS_MEMORY : CUSTOM_IOCTL_CALL
 {
 	unsigned __int64 ProcessId;
@@ -70,6 +79,7 @@ public:
 	bool WriteProtectedProcessMemory(UINT64 Address, PVOID Value, SIZE_T Size);
 
 	SIZE_T VirtualQueryEx(PVOID BaseAddress, MEMORY_BASIC_INFORMATION& mbi);
+	uint32_t VirtualProtect(DWORD address, int size, uint32_t protect);
 	///////////////////////////////////////////
 	//ROAD TO BSOD. HAHAHA
 	///////////////////////////////////////////
@@ -98,6 +108,7 @@ private:
 #define GET_PROCESS_BASE_IOCTL CTL_CODE(FILE_DEVICE_UNKNOWN, 0x2333, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
 #define VIRTUAL_QUERY_EX_IOCTL CTL_CODE(FILE_DEVICE_UNKNOWN, 0x2336, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
 #define WRITE_PROTECTED_VIRTUAL_MEMORY_IOCTL CTL_CODE(FILE_DEVICE_UNKNOWN, 0x2337, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
+#define VIRTUAL_PROTECT_IOCTL CTL_CODE(FILE_DEVICE_UNKNOWN, 0x2338, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
 ///////////////////////////////////////////
 //ROAD TO BSOD. HAHAHA
 ///////////////////////////////////////////

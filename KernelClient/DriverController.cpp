@@ -13,6 +13,7 @@
 #include <Psapi.h>
 
 #include "DriverController.h"
+#include "stdafx.h"
 
 unsigned __int32 DriverController::GetProcessPidByName(const wchar_t* ProcessName)
 {
@@ -183,6 +184,32 @@ SIZE_T DriverController::VirtualQueryEx(PVOID BaseAddress, MEMORY_BASIC_INFORMAT
 
 	mbi = DriverCall.mbi;
 	return DriverCall.size;
+}
+
+uint32_t DriverController::VirtualProtect(DWORD address, int size, uint32_t protect)
+{
+	if (!address || !size || !protect)
+		return 0;
+
+	//MessageBoxA(0, ("pSize: " + hexify<int>(size)).c_str(), "", 0);
+
+	VIRTUAL_PROTECT DriverCall;
+	DriverCall.Filter = 0xDEADBEEFCAFEBEEF;
+	DriverCall.ControlCode = VIRTUAL_PROTECT_IOCTL;
+
+	DriverCall.ProcessId = TargetProcessPid;
+	DriverCall.addr = address;
+	DriverCall.protect = protect;
+	DriverCall.size = size;
+
+	DWORD BytesOut = 0;
+
+	if (DeviceIoControl(DriverHandle, IOCTL_DISK_GET_DRIVE_GEOMETRY, &DriverCall, sizeof(DriverCall), &DriverCall, sizeof(DriverCall), &BytesOut, 0)) {
+		//MessageBoxA(0, ("post oldProtection: " + hexify<ULONG>(DriverCall.protect)).c_str(), "", 0);
+		return protect;
+	}
+
+	return 0;
 }
 
 ///////////////////////////////////////////
